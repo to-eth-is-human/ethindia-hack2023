@@ -1,6 +1,6 @@
 
 import { React, useEffect } from "react";
-import { ethers, Wallet } from 'ethers'
+import { ethers, Transaction, TransactionResponse, Wallet } from 'ethers'
 import { EthersAdapter } from '@safe-global/protocol-kit'
 import dotenv from 'dotenv'
 import SafeApiKit from '@safe-global/api-kit'
@@ -14,22 +14,70 @@ import Features from '@/components/features'
 import FeaturesBlocks from '@/components/features-blocks'
 import Testimonials from '@/components/testimonials'
 import Newsletter from '@/components/newsletter'
-import { MetaTransactionData } from '@safe-global/safe-core-sdk-types'
+import { MetaTransactionData, SafeMultisigTransactionResponse } from '@safe-global/safe-core-sdk-types'
 
 
+/*
+TO ASK
+* Get all Safes of a given person
+* Hex to string conversion not happening
+* Deploy to a safe?
+* How to get address of a safe, given only EOA
+* pendingtransaction results?
+
+
+*/
 
 
 
 class SafeUtil {
 
+    /*
+    Flow: AFter signing in, user will have all his/her safe addresses.
+
+    A script should poll periodically poll for pending transactions in each safe, and update a table
+
+    A form must be available to create a safe
+    A from must be available to create a new transaction
+    A form must be available to propose an existing transaction
+    A form must be available to execute a transation
+    A from must be available to send ethereum to the safe
+
+    */
+
+    getProvider = () => {
+        return new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL)
+    }
+
+    getSigner = (env_var: string) => {
+        let provider = this.getProvider()
+        return  new ethers.Wallet(String(env_var), provider)
+
+    }
+
+    getOwnerSigner = () => {
+        return this.getSigner(String(process.env.NEXT_PUBLIC_OWNER_2_PRIVATE_KEY))
+    }
+
+    getOwnerEthAdapter = () => {
+        return new EthersAdapter({
+            ethers,
+            signerOrProvider: this.getOwnerSigner()
+        })
+
+    }
+
+    getSafeService = () => {
+        return new SafeApiKit({
+            chainId: 1n
+        })
+
+    }
+
     sendEth = async (to_address: string) => {
         console.log("Sending eth")
 
-
-        const provider = new ethers.JsonRpcProvider(String(process.env.NEXT_PUBLIC_RPC_URL))
-
-        const owner2Signer = new ethers.Wallet(String(process.env.NEXT_PUBLIC_OWNER_2_PRIVATE_KEY), provider)
-
+        const ownerSigner = this.getOwnerSigner()
 
         // const safeAddress = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2" //safeSdk.getAddress()
         const safeAddress = to_address
@@ -52,7 +100,7 @@ class SafeUtil {
         // }
         console.log(transactionParameters)
 
-        const tx = await owner2Signer.sendTransaction(transactionParameters)
+        const tx = await ownerSigner.sendTransaction(transactionParameters)
 
         console.log('Fundraising.')
         console.log(`Deposit Transaction: https://goerli.etherscan.io/tx/${tx.hash}`)
@@ -60,36 +108,30 @@ class SafeUtil {
 
 
 
+
     deployContract = async (n: number) => {
 
-        console.log("DEploy contract of N accounts and threshold = N/2 + 1")
+        console.log("Deploy contract of N accounts and threshold = N/2 + 1")
 
-        const provider = new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL)
+        const provider = this.getProvider()
 
         // Initialize signers
         let signers: Wallet[] = [];
         for (let i = 1; i <= n; i++) {
 
-            const signer = new ethers.Wallet(String(process.env[`NEXT_PUBLIC_OWNER_${String(i)}_PRIVATE_KEY`]), provider)
+            const signer = this.getSigner(String(process.env[`NEXT_PUBLIC_OWNER_${String(i)}_PRIVATE_KEY`]))
             signers.push(signer)
         }
 
 
         // This must be the person who has eth
-        const ownerSigner = new ethers.Wallet(String(process.env['NEXT_PUBLIC_OWNER_2_PRIVATE_KEY']), provider)
-        const ethAdapterOwner = new EthersAdapter({
-            ethers,
-            signerOrProvider: ownerSigner
-        })
-
-        const safeApiKit = new SafeApiKit({
-            chainId: 1n
-        })
+        const ownerSigner = this.getOwnerSigner()
 
         console.log("Waiting to initialise safe")
-        const safeFactory = await SafeFactory.create({ ethAdapter: ethAdapterOwner })
+        const safeFactory = await SafeFactory.create({ ethAdapter: this.getOwnerEthAdapter() })
 
-        let owners: String[] = [];
+        
+        let owners: string[] = [];
         for (let i = 0; i < n; i++) {
             let address = await signers[i].getAddress();
             owners.push(address)
@@ -139,35 +181,38 @@ class SafeUtil {
             value: amount
         }
         // Create a Safe transaction with the provided parameters
-        // TODO: Get safesdkowner
         const safeTransaction = await safeSdkOwner1.createTransaction({ transactions: [safeTransactionData] })
     }
 
 
-    proposeTransaction = async (tx_hash: string) => {
+    proposeTransaction = async (transaction: SafeMultisigTransactionResponse) => {
 
         // Deterministic hash based on transaction parameters
         // TODO: Get safeSdkOwner1, safe service,
-        \
-        const senderSignature = await safeSdkOwner1.signTransactionHash(tx_hash)
+        // TODO: Get the transac
+    
+        const senderSignature = await safeSdkOwner1.signTransactionHash(transaction.safeTxHash)
 
+        
+        const safeService = this.getSafeService()
+        
         await safeService.proposeTransaction({
             safeAddress,
-            safeTransactionData: safeTransaction.data,
-            safeTxHash,
-            senderAddress: await owner1Signer.getAddress(),
+            safeTransactionData: transaction.data,
+            transaction.safeTxHash,
+            senderAddress: await this.getOwnerSigner().getAddress(),
             senderSignature: senderSignature.data,
         })
 
     }
 
-    getPendingTransactions = async () => {
+    getPendingTransactions = async (safeAddress: string) => {
         // TODO: GEt safeService, safeaddress
-        const pendingTransactions = await safeService.getPendingTransactions(safeAddress).results
+        const pendingTransactions = await this.getSafeService().getPendingTransactions(safeAddress).results
         return pendingTransactions
     }
 
-    confirmTransaction = async (transaction) => {
+    confirmTransaction = async (transaction: SafeMultisigTransactionResponse) => {
         // Assumes that the first pending transaction is the transaction you want to confirm
         const safeTxHash = transaction.safeTxHash
 
@@ -191,10 +236,10 @@ class SafeUtil {
         const response = await safeService.confirmTransaction(safeTxHash, signature.data)
     }
 
-    executeTransaction = async (safeTxHash) => {
+    executeTransaction = async (transaction: SafeMultisigTransactionResponse) => {
         // TODO: GEt safeService
-        const safeTransaction = await safeService.getTransaction(safeTxHash)
-        const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
+        const safeTransaction = await this.getSafeService().getTransaction(transaction.safeTxHash)
+        const executeTxResponse = await this.getSafeService().executeTransaction(safeTransaction)
         const receipt = await executeTxResponse.transactionResponse?.wait()
 
         console.log('Transaction executed:')
