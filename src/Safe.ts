@@ -285,6 +285,12 @@ class SafeUtil {
         console.log(`The final balance of the Safe: ${ethers.formatUnits(afterBalance, 'ether')} ETH`)
     }
 
+    getSafesByOwner = async (owner_address: string) => {
+        let {safes} = await this.getSafeService().getSafesByOwner(owner_address)
+        return safes
+
+    }
+
 
 }
 
