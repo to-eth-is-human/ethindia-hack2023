@@ -1,87 +1,170 @@
-export const metadata = {
-  title: 'Sign In - Simple',
-  description: 'Page description',
-}
+'use client';
+import { SafeAuthPack, SafeAuthInitOptions, AuthKitSignInData } from "@safe-global/auth-kit";
+import Safe, { EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
+import { ethers, BrowserProvider, Eip1193Provider } from "ethers";
+import { GelatoRelayPack } from '@safe-global/relay-kit'
+import RPC from "../../web3RPC";
+import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
+import { useState, useEffect } from 'react';
 
-import Link from 'next/link'
+import Image from 'next/image'
+import SafeLogo from '@/public/images/safe_logo.png'
+
+
 
 export default function SignIn() {
+
+  const [safeAuth, setSafeAuth] = useState<SafeAuthPack>();
+  const [userInfo, setUserInfo] = useState<any>();
+  const [provider, setProvider] = useState<Eip1193Provider | null>(null);
+  const [safeAuthSignInResponse, setSafeAuthSignInResponse] = useState<AuthKitSignInData | null>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const safeAuthInitOptions: SafeAuthInitOptions = {
+          showWidgetButton: false,
+          enableLogging: true,
+          chainConfig: {
+            blockExplorerUrl: "https://goerli.etherscan.io",
+            chainId: "0x5",
+            displayName: "Ethereum Goerli",
+            rpcTarget: "wss://ethereum-goerli.publicnode.com",
+            ticker: "ETH",
+            tickerName: "Ethereum",
+          },
+        };
+
+        const safeAuthPack = new SafeAuthPack();
+        await safeAuthPack.init(safeAuthInitOptions);
+
+        setSafeAuth(safeAuthPack);
+        if (safeAuthPack.isAuthenticated) {
+          const signInInfo = await safeAuthPack?.signIn();
+          setSafeAuthSignInResponse(signInInfo);
+          setProvider(safeAuthPack.getProvider() as Eip1193Provider);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    init();
+  }, []);
+
+  const login = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    if (!safeAuth) {
+      return;
+    }
+    const signInInfo = await safeAuth.signIn();
+
+    const userInfo = await safeAuth.getUserInfo();
+
+    setSafeAuthSignInResponse(signInInfo);
+    setUserInfo(userInfo || undefined);
+    setProvider(safeAuth.getProvider() as Eip1193Provider);
+  };
+
+  const logout = async () => {
+    if (!safeAuth) {
+      return;
+    }
+    await safeAuth.signOut();
+    setProvider(null);
+    setSafeAuthSignInResponse(null);
+  };
+
+  const createSafe = async () => {
+    const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
+    const signer = await provider.getSigner();
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: signer,
+    } as any);
+
+  
+    const safeFactory = await SafeFactory.create({ ethAdapter });
+    const safe: Safe = await safeFactory.deploySafe({
+      safeAccountConfig: { threshold: 1, owners: [safeAuthSignInResponse?.eoa as string] },
+    });
+    };
+
+    const getChainId = async () => {
+      if (!provider) {
+        
+        return;
+      }
+      const rpc = new RPC(provider);
+      const chainId = await rpc.getChainId();
+    };
+  
+    const getAccounts = async () => {
+      if (!provider) {
+        return;
+      }
+      const rpc = new RPC(provider);
+      const address = await rpc.getAccounts();
+    };
+  
+    const getBalance = async () => {
+      if (!provider) {
+        return;
+      }
+      const rpc = new RPC(provider);
+      const balance = await rpc.getBalance();
+    };
+  
+    const sendTransaction = async () => {
+      if (!provider) {
+        return;
+      }
+      const rpc = new RPC(provider);
+      const receipt = await rpc.sendTransaction();
+    };
+
+  
+    const signMessage = async () => {
+      if (!provider) {
+        return;
+      }
+      const rpc = new RPC(provider);
+      const signedMessage = await rpc.signMessage();
+    };
+
+
   return (
     <section className="bg-gradient-to-b from-gray-100 to-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="pt-32 pb-12 md:pt-40 md:pb-20">
 
           {/* Page header */}
-          <div className="max-w-3xl mx-auto text-center pb-12 md:pb-20">
-            <h1 className="h1">Welcome back. We exist to make entrepreneurism easier.</h1>
+          <div className="max-w-3xl mx-auto text-center pb-10">
+            <h1 className="text-xl">Welcome to DappXChange Boardsuite. Sign up with SafeAuth using Google to get your smart contract wallet.</h1>
           </div>
+          
+          <Image className="md:max-w-none mx-auto rounded pb-4" src={SafeLogo} width={100} alt="Safe Logo" />           
 
           {/* Form */}
           <div className="max-w-sm mx-auto">
             <form>
-              <div className="flex flex-wrap -mx-3 mb-4">
-                <div className="w-full px-3">
-                  <label className="block text-gray-800 text-sm font-medium mb-1" htmlFor="email">Email</label>
-                  <input id="email" type="email" className="form-input w-full text-gray-800" placeholder="Enter your email address" required />
-                </div>
-              </div>
-              <div className="flex flex-wrap -mx-3 mb-4">
-                <div className="w-full px-3">
-                  <div className="flex justify-between">
-                    <label className="block text-gray-800 text-sm font-medium mb-1" htmlFor="password">Password</label>
-                    <Link href="/reset-password" className="text-sm font-medium text-blue-600 hover:underline">Having trouble signing in?</Link>
-                  </div>
-                  <input id="password" type="password" className="form-input w-full text-gray-800" placeholder="Enter your password" required />
-                </div>
-              </div>
-              <div className="flex flex-wrap -mx-3 mb-4">
-                <div className="w-full px-3">
-                  <div className="flex justify-between">
-                    <label className="flex items-center">
-                      <input type="checkbox" className="form-checkbox" />
-                      <span className="text-gray-600 ml-2">Keep me signed in</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
               <div className="flex flex-wrap -mx-3 mt-6">
                 <div className="w-full px-3">
-                  <button className="btn text-white bg-blue-600 hover:bg-blue-700 w-full">Sign in</button>
+                  <button onClick={login} className="btn text-white bg-blue-600 hover:bg-blue-700 w-full">Sign in using SafeAuth</button>
                 </div>
               </div>
+              {provider ? (
+          safeAuthSignInResponse?.eoa ? (
+            <p>
+              Your EOA:{" "}
+              <a href={`https://goerli.etherscan.io/address/${safeAuthSignInResponse?.eoa}`} target="_blank" rel="noreferrer" style={{color:'white'}}>
+                {safeAuthSignInResponse?.eoa}
+              </a>
+            </p>
+          ) : null
+        ) : null}{" "}
             </form>
-            <div className="flex items-center my-6">
-              <div className="border-t border-gray-300 grow mr-3" aria-hidden="true"></div>
-              <div className="text-gray-600 italic">Or</div>
-              <div className="border-t border-gray-300 grow ml-3" aria-hidden="true"></div>
-            </div>
-            <form>
-              <div className="flex flex-wrap -mx-3 mb-3">
-                <div className="w-full px-3">
-                  <button className="btn px-0 text-white bg-gray-900 hover:bg-gray-800 w-full relative flex items-center">
-                    <svg className="w-4 h-4 fill-current text-white opacity-75 shrink-0 mx-4" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.95 0C3.578 0 0 3.578 0 7.95c0 3.479 2.286 6.46 5.466 7.553.397.1.497-.199.497-.397v-1.392c-2.187.497-2.683-.993-2.683-.993-.398-.895-.895-1.193-.895-1.193-.696-.497.1-.497.1-.497.795.1 1.192.795 1.192.795.696 1.292 1.888.895 2.286.696.1-.497.298-.895.497-1.093-1.79-.2-3.578-.895-3.578-3.975 0-.895.298-1.59.795-2.087-.1-.2-.397-.994.1-2.087 0 0 .695-.2 2.186.795a6.408 6.408 0 011.987-.299c.696 0 1.392.1 1.988.299 1.49-.994 2.186-.795 2.186-.795.398 1.093.199 1.888.1 2.087.496.596.795 1.291.795 2.087 0 3.08-1.889 3.677-3.677 3.875.298.398.596.895.596 1.59v2.187c0 .198.1.497.596.397C13.714 14.41 16 11.43 16 7.95 15.9 3.578 12.323 0 7.95 0z" />
-                    </svg>
-                    <span className="flex-auto pl-16 pr-8 -ml-16">Continue with GitHub</span>
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-wrap -mx-3">
-                <div className="w-full px-3">
-                  <button className="btn px-0 text-white bg-red-600 hover:bg-red-700 w-full relative flex items-center">
-                    <svg className="w-4 h-4 fill-current text-white opacity-75 shrink-0 mx-4" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.9 7v2.4H12c-.2 1-1.2 3-4 3-2.4 0-4.3-2-4.3-4.4 0-2.4 2-4.4 4.3-4.4 1.4 0 2.3.6 2.8 1.1l1.9-1.8C11.5 1.7 9.9 1 8 1 4.1 1 1 4.1 1 8s3.1 7 7 7c4 0 6.7-2.8 6.7-6.8 0-.5 0-.8-.1-1.2H7.9z" />
-                    </svg>
-                    <span className="flex-auto pl-16 pr-8 -ml-16">Continue with Google</span>
-                  </button>
-                </div>
-              </div>
-            </form>
-            <div className="text-gray-600 text-center mt-6">
-              Don't you have an account? <Link href="/signup" className="text-blue-600 hover:underline transition duration-150 ease-in-out">Sign up</Link>
-            </div>
           </div>
-
         </div>
       </div>
     </section>

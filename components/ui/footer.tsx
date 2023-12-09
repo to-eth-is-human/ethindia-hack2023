@@ -2,7 +2,7 @@ import Logo from './logo'
 
 export default function Footer() {
   return (
-    <footer>
+    <footer className='mt-16'>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
         {/* Top area: Blocks */}
