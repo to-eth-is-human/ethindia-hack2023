@@ -1,7 +1,5 @@
-
-import { React, useEffect } from "react";
 import { ethers, Transaction, TransactionResponse, Wallet } from 'ethers'
-import { EthersAdapter } from '@safe-global/protocol-kit'
+import Safe, { EthersAdapter } from '@safe-global/protocol-kit'
 import dotenv from 'dotenv'
 import SafeApiKit from '@safe-global/api-kit'
 import { SafeAccountConfig } from '@safe-global/protocol-kit'
@@ -14,7 +12,7 @@ import Features from '@/components/features'
 import FeaturesBlocks from '@/components/features-blocks'
 import Testimonials from '@/components/testimonials'
 import Newsletter from '@/components/newsletter'
-import { MetaTransactionData, SafeMultisigTransactionResponse } from '@safe-global/safe-core-sdk-types'
+import { MetaTransactionData, OperationType, SafeMultisigTransactionResponse, SafeTransaction, SafeTransactionDataPartial } from '@safe-global/safe-core-sdk-types'
 
 
 /*
@@ -74,6 +72,19 @@ class SafeUtil {
 
     }
 
+    getConfig = (owners_list: string[], threshold: number, SALT_NONCE: string = '150000', SAFE_VERSION: string = '1.3.0') => {
+        return {
+            RPC_URL: (String(process.env.NEXT_PUBLIC_RPC_URL)),
+            DEPLOYER_ADDRESS_PRIVATE_KEY: String(process.env.NEXT_PUBLIC_OWNER_2_PRIVATE_KEY),
+            DEPLOY_SAFE: {
+              OWNERS: owners_list,
+              THRESHOLD: threshold,
+              SALT_NONCE: '150000',
+              SAFE_VERSION: '1.3.0'
+            },
+          }
+    }
+
     sendEth = async (to_address: string) => {
         console.log("Sending eth")
 
@@ -130,7 +141,7 @@ class SafeUtil {
         console.log("Waiting to initialise safe")
         const safeFactory = await SafeFactory.create({ ethAdapter: this.getOwnerEthAdapter() })
 
-        
+
         let owners: string[] = [];
         for (let i = 0; i < n; i++) {
             let address = await signers[i].getAddress();
@@ -172,7 +183,12 @@ class SafeUtil {
 
     createTransaction = async (safe_address: string, dest_address: string, ether: string) => {
 
-        // Any address can be used. In this example you will use vitalik.eth
+        const ethAdapter = this.getOwnerEthAdapter()
+        const safe = await Safe.create({
+            ethAdapter,
+            safeAddress: safe_address
+          })
+
         const amount = ethers.parseUnits(ether, 'ether').toString()
 
         const safeTransactionData: MetaTransactionData = {
@@ -181,25 +197,31 @@ class SafeUtil {
             value: amount
         }
         // Create a Safe transaction with the provided parameters
-        const safeTransaction = await safeSdkOwner1.createTransaction({ transactions: [safeTransactionData] })
+        const safeTransaction = await safe.createTransaction({ transactions: [safeTransactionData] })
     }
 
 
-    proposeTransaction = async (transaction: SafeMultisigTransactionResponse) => {
+    proposeTransaction = async (safe_address: string, transaction: SafeTransaction) => {
 
         // Deterministic hash based on transaction parameters
-        // TODO: Get safeSdkOwner1, safe service,
-        // TODO: Get the transac
+
+        const ethAdapter = this.getOwnerEthAdapter()
+        const safe = await Safe.create({
+            ethAdapter,
+            safeAddress: safe_address
+          })
     
-        const senderSignature = await safeSdkOwner1.signTransactionHash(transaction.safeTxHash)
+        const safeTxHash = await safe.getTransactionHash(transaction)
+
+        const senderSignature = await safe.signTransactionHash(safeTxHash)
+
+        const safeService = this.getSafeService()
 
         
-        const safeService = this.getSafeService()
-        
         await safeService.proposeTransaction({
-            safeAddress,
+            safeAddress: safe_address,
             safeTransactionData: transaction.data,
-            transaction.safeTxHash,
+            safeTxHash,
             senderAddress: await this.getOwnerSigner().getAddress(),
             senderSignature: senderSignature.data,
         })
@@ -208,11 +230,11 @@ class SafeUtil {
 
     getPendingTransactions = async (safeAddress: string) => {
         // TODO: GEt safeService, safeaddress
-        const pendingTransactions = await this.getSafeService().getPendingTransactions(safeAddress).results
+        const pendingTransactions = (await this.getSafeService().getPendingTransactions(safeAddress)).results
         return pendingTransactions
     }
 
-    confirmTransaction = async (transaction: SafeMultisigTransactionResponse) => {
+    confirmTransaction = async (safe_address: string, transaction: SafeMultisigTransactionResponse) => {
         // Assumes that the first pending transaction is the transaction you want to confirm
         const safeTxHash = transaction.safeTxHash
 
@@ -229,26 +251,37 @@ class SafeUtil {
         // TODO: Get safe address
         const safeSdkOwner2 = await Safe.create({
             ethAdapter: ethAdapterOwner2,
-            safeAddress
+            safeAddress: safe_address
         })
 
         const signature = await safeSdkOwner2.signTransactionHash(safeTxHash)
-        const response = await safeService.confirmTransaction(safeTxHash, signature.data)
+        const response = await this.getSafeService().confirmTransaction(safeTxHash, signature.data)
     }
 
-    executeTransaction = async (transaction: SafeMultisigTransactionResponse) => {
+    executeTransaction = async (safe_address: string, transaction: SafeMultisigTransactionResponse) => {
         // TODO: GEt safeService
+
+        const ethAdapter = this.getOwnerEthAdapter()
+        const safe = await Safe.create({
+            ethAdapter,
+            safeAddress: safe_address
+          })
+        
         const safeTransaction = await this.getSafeService().getTransaction(transaction.safeTxHash)
-        const executeTxResponse = await this.getSafeService().executeTransaction(safeTransaction)
+        const executeTxResponse = await safe.executeTransaction(safeTransaction)
         const receipt = await executeTxResponse.transactionResponse?.wait()
 
         console.log('Transaction executed:')
         console.log(`https://goerli.etherscan.io/tx/${receipt.transactionHash}`)
     }
 
-    getBalance = async () => {
-        const afterBalance = await safeSdk.getBalance()
-
+    getBalance = async (safe_address: string) => {
+        const ethAdapter = this.getOwnerEthAdapter()
+        const safe = await Safe.create({
+            ethAdapter,
+            safeAddress: safe_address
+          })
+        const afterBalance = await safe.getBalance()
         console.log(`The final balance of the Safe: ${ethers.formatUnits(afterBalance, 'ether')} ETH`)
     }
 
