@@ -24,7 +24,7 @@ export default function Features() {
     <section className="relative">
 
       {/* Section background (needs .relative class on parent and next sibling elements) */}
-      <div className="absolute inset-0 bg-gray-100 pointer-events-none mb-16" aria-hidden="true"></div>
+      <div className="absolute inset-0 bg-gray-100 pointer-events-none mb-16 h-full" aria-hidden="true"></div>
       <div className="absolute left-0 right-0 m-auto w-px p-px h-20 bg-gray-200 transform -translate-y-1/2"></div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
@@ -33,14 +33,21 @@ export default function Features() {
           {/* Section header */}
           <div className="max-w-3xl mx-auto text-center pb-12 md:pb-16">
             <h1 className="h2 mt-12">Dashboard</h1>
-            <p className="text-xl text-gray-600">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat.</p>
           </div>
 
           {/* Section content */}
           {/* <div className="md:grid md:grid-cols-12 md:gap-6"> */}
 
             {/* Content */}
+            
             <div className="max-w-3xl mx-auto text-center pb-12 md:pb-16">
+
+                 <a className={`flex items-center text-lg mb-8 p-5 rounded border transition duration-300 ease-in-out mb-3 bg-blue-600 border-transparent text-white`}>
+                  <center className='content-center'>
+                    <div className="text-center font-bold leading-snug tracking-tight mb-1">Funds in Organization Wallet</div>
+                    <div className="text-center text-white"> 20,340 ETH</div>
+                  </center>
+                </a>
 
                 <table className="w-full text-sm text-left rtl:text-right text-gray-500 light:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 light:bg-gray-700 light:text-gray-400">
