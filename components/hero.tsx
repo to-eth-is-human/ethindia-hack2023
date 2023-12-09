@@ -1,5 +1,6 @@
-import VideoThumb from '@/public/images/hero-image.png'
+import Cover from '@/public/images/cover.png'
 import ModalVideo from '@/components/modal-video'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Hero() {
@@ -45,14 +46,11 @@ export default function Hero() {
           </div>
 
           {/* Hero image */}
-          <ModalVideo
-            thumb={VideoThumb}
-            thumbWidth={768}
-            thumbHeight={432}
-            thumbAlt="Modal video thumbnail"
-            video="/videos/video.mp4"
-            videoWidth={1920}
-            videoHeight={1080} />
+          <div className="text-center">
+          <center>
+          <Image className='rounded-xl' src={Cover} width={'700'} alt={''}/>
+          </center>
+          </div>
 
         </div>
 
