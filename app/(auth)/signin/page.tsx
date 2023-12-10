@@ -6,6 +6,8 @@ import { GelatoRelayPack } from '@safe-global/relay-kit'
 import RPC from "../../web3RPC";
 import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
 import { useState, useEffect } from 'react';
+import { createContext, useContext } from 'react';
+
 
 import Image from 'next/image'
 import SafeLogo from '@/public/images/safe_logo.png'
@@ -18,6 +20,7 @@ export default function SignIn() {
   const [userInfo, setUserInfo] = useState<any>();
   const [provider, setProvider] = useState<Eip1193Provider | null>(null);
   const [safeAuthSignInResponse, setSafeAuthSignInResponse] = useState<AuthKitSignInData | null>(null);
+
 
   useEffect(() => {
     const init = async () => {
@@ -136,6 +139,7 @@ export default function SignIn() {
   return (
     <section className="bg-gradient-to-b from-gray-100 to-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      {!provider ? 
         <div className="pt-32 pb-12 md:pt-40 md:pb-20">
 
           {/* Page header */}
@@ -153,19 +157,41 @@ export default function SignIn() {
                   <button onClick={login} className="btn text-white bg-blue-600 hover:bg-blue-700 w-full">Sign in using SafeAuth</button>
                 </div>
               </div>
-              {provider ? (
-          safeAuthSignInResponse?.eoa ? (
-            <p>
-              Your EOA:{" "}
-              <a href={`https://goerli.etherscan.io/address/${safeAuthSignInResponse?.eoa}`} target="_blank" rel="noreferrer" style={{color:'white'}}>
-                {safeAuthSignInResponse?.eoa}
-              </a>
-            </p>
-          ) : null
-        ) : null}{" "}
             </form>
           </div>
         </div>
+
+        : (
+          safeAuthSignInResponse?.eoa ? (
+            <div className="pt-32 pb-12 md:pt-40 md:pb-20">
+
+          {/* Page header */}
+          <div className="max-w-3xl mx-auto text-center pb-10">
+            <h1 className="text-xl">Welcome to DappXChange Boardsuite. <br></br><span className="text-lg">You have been logged in with Safe Auth.</span></h1>
+          </div>
+          
+          <Image className="md:max-w-none mx-auto rounded pb-4" src={SafeLogo} width={100} alt="Safe Logo" />           
+
+          {/* Form */}
+          <div className="mx-auto">
+            <form>
+              <div className="flex flex-wrap mt-6">
+                <div className="mx-auto px-3 bg-blue-400">
+                <p className="text-center p-4 font-bold">
+                  Your EOA{" "}
+                  <a className="font-bold text-white underline" href={`https://goerli.etherscan.io/address/${safeAuthSignInResponse?.eoa}`} target="_blank">
+                  {safeAuthSignInResponse?.eoa}
+                  </a>
+                  </p>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+            
+          ) : null
+        ) }{" "}
       </div>
     </section>
   )
