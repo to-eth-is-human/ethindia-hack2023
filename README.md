@@ -1,47 +1,35 @@
 # DAppXchange BoardSuite
 
-Short description or introduction to the project.
+## Problem Solved
+### Co-ownership of Organization Wallets 👥💼
+Our platform simplifies multi-signature wallet coordination using Gnosis Safe Auth Kit, ensuring transparent and accountable transactions among organization members. By requiring multiple authorized approvals, it streamlines financial operations.
 
-## Table of Contents
+### Decentralized Governance for Organizations 🌐🏛️
+Revolutionizing traditional governance, our model fosters transparency and inclusivity. It enables stakeholders to engage in transparent decision-making, leveraging blockchain technology for fair voting mechanisms and collective decision-making.
 
-- [About](#about)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+### Gasless and Secure Token Swaps 🔄🛡️
+Enhancing DeFi accessibility, our platform offers gasless token swaps via 1inch Fusion API. We optimize exchanges, prioritize security, and mitigate transaction costs, addressing concerns related to private key management.
 
-## About
+## Challenges Faced
+- **1inch Network's Fusion SDK Deployment:** Unable to deploy on testnets due to SDK limitations.
+- **Safe Auth Kit Compatibility:** Client-side rendering conflicts with NextJS Server-side rendering, leading to deployment issues and CORS conflicts with Safe API kit utilization.
 
-A brief description of the project, its purpose, and maybe the problem it solves.
+## Technologies Used
+- Gnosis Safe Auth Kit
+- 1inch Fusion API
+- Ethereum
+- NextJS
 
-## Features
+## Getting Started
+### Prerequisites
+- Node.js
+- Clone this repository
+- Run `npm install` to install dependencies
+- Set up configurations
 
-Highlight some key features or functionalities of the project.
+### Running the Application
+- Run `npm run dev` to start the development server
+- Access the application at `http://localhost:3000`
 
-## Installation
-
-Steps to install or set up the project locally. Include prerequisites if necessary.
-
-Example:
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/your-username/project-name.git
-    ```
-
-2. Install dependencies:
-    ```bash
-    cd project-name
-    npm install
-    ```
-
-## Usage
-
-Instructions on how to use or run the project. Include any commands or configurations needed.
-
-Example:
-
-To start the application, run:
-```bash
-npm start
+## Contributing
+We welcome contributions! Please follow our [contribution guidelines](CONTRIBUTING.md) to get started.
