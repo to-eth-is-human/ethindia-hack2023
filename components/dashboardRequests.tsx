@@ -2,10 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 
-import data from './data.json'
 
 export default function Features() {
-  
+
   const [tab, setTab] = useState<number>(1)
 
   const tabs = useRef<HTMLDivElement>(null)
@@ -16,9 +15,23 @@ export default function Features() {
 
   useEffect(() => {
     heightFix()
-  }, []) 
+  }, [])
 
+
+  const data = {
+    "data": [
+      {
+        "description": "Buy 7% of 1inch tokens",
+        "price": "4590 ETH"
+      },
+      {
+        "description": "Buy 92% of Nitt Tokens",
+        "price": "77 ETH"
+      }
+    ]
+  }
   console.log(data)
+
 
   return (
     <section className="relative">
@@ -38,56 +51,56 @@ export default function Features() {
           {/* Section content */}
           {/* <div className="md:grid md:grid-cols-12 md:gap-6"> */}
 
-            {/* Content */}
-            
-            <div className="max-w-3xl mx-auto text-center pb-12 md:pb-16">
+          {/* Content */}
 
-                 <a className={`flex items-center text-lg mb-8 p-5 rounded border transition duration-300 ease-in-out mb-3 bg-blue-600 border-transparent text-white`}>
-                  <center className='content-center'>
-                    <div className="text-center font-bold leading-snug tracking-tight mb-1">Funds in Organization Wallet</div>
-                    <div className="text-center text-white"> 20,340 ETH</div>
-                  </center>
-                </a>
+          <div className="max-w-3xl mx-auto text-center pb-12 md:pb-16">
 
-                <table className="w-full text-sm text-left rtl:text-right text-gray-500 light:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 light:bg-gray-700 light:text-gray-400">
-                        <tr>
-                            <th scope="col" className="px-6 py-3">
-                                Description
-                            </th>
+            <a className={`flex items-center text-lg mb-8 p-5 rounded border transition duration-300 ease-in-out mb-3 bg-blue-600 border-transparent text-white`}>
+              <center className='content-center'>
+                <div className="text-center font-bold leading-snug tracking-tight mb-1">Funds in Organization Wallet</div>
+                <div className="text-center text-white"> 20,340 ETH</div>
+              </center>
+            </a>
 
-                            <th scope="col" className="px-6 py-3">
-                                Price
-                            </th>
-                            <th scope="col" className="px-6 py-3">
-                                Accept
-                            </th>
-                            <th scope="col" className="px-6 py-3">
-                                Reject
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* {[...Array(10)].map((elementInArray, i) => (  */}
-                        {data.data.map((e, i) => ( 
-                        <tr className="odd:bg-white odd:light:bg-gray-900 even:bg-gray-50 even:light:bg-gray-800 border-b light:border-gray-700" key={i}>
-                            <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap light:text-white">
-                                {e.description}
-                            </th>
-                            <td className="px-6 py-4">
-                                {e.price}
-                            </td>
-                            <td className="px-6 py-4">
-                            <   button type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Accept</button>
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 light:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 light:bg-gray-700 light:text-gray-400">
+                <tr>
+                  <th scope="col" className="px-6 py-3">
+                    Description
+                  </th>
 
-                            </td>
-                            <td className="px-6 py-4">
-                                <button type="button" className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Reject</button>
-                            </td>
-                        </tr>
-                        ))}
-                    </tbody>
-                </table>
+                  <th scope="col" className="px-6 py-3">
+                    Price
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Accept
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Reject
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* {[...Array(10)].map((elementInArray, i) => (  */}
+                {data.data.map((e, i) => (
+                  <tr className="odd:bg-white odd:light:bg-gray-900 even:bg-gray-50 even:light:bg-gray-800 border-b light:border-gray-700" key={i}>
+                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap light:text-white">
+                      {e.description}
+                    </th>
+                    <td className="px-6 py-4">
+                      {e.price}
+                    </td>
+                    <td className="px-6 py-4">
+                      <   button type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Accept</button>
+
+                    </td>
+                    <td className="px-6 py-4">
+                      <button type="button" className="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Reject</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
 
           </div>

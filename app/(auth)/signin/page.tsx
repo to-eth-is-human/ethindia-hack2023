@@ -135,6 +135,8 @@ export default function SignIn() {
 
 
   return (
+    typeof window !== 'undefined' ? <div></div> :
+    <div>
     <section className="bg-gradient-to-b from-gray-100 to-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
       {!provider ? 
@@ -192,5 +194,6 @@ export default function SignIn() {
         ) }{" "}
       </div>
     </section>
+    </div>
   )
 }
