@@ -298,6 +298,7 @@ export default class SafeUtil {
         const receipt = await executeTxResponse.transactionResponse?.wait()
 
         console.log('Transaction executed:')
+        // @ts-ignore
         console.log(`https://goerli.etherscan.io/tx/${receipt.transactionHash}`)
     }
 
