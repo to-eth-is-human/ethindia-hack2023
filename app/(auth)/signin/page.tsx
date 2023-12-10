@@ -2,9 +2,9 @@
 import { SafeAuthPack, SafeAuthInitOptions, AuthKitSignInData } from "@safe-global/auth-kit";
 import Safe, { EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
 import { ethers, BrowserProvider, Eip1193Provider } from "ethers";
-import { GelatoRelayPack } from '@safe-global/relay-kit'
+// import { GelatoRelayPack } from '@safe-global/relay-kit'
 import RPC from "../../web3RPC";
-import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
+// import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
 import { useState, useEffect, createContext, useContext } from 'react';
 
 
@@ -76,66 +76,66 @@ export default function SignIn() {
     setSafeAuthSignInResponse(null);
   };
 
-  const createSafe = async () => {
-    const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
-    const signer = await provider.getSigner();
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signerOrProvider: signer,
-    } as any);
+  // const createSafe = async () => {
+  //   const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
+  //   const signer = await provider.getSigner();
+    // const ethAdapter = new EthersAdapter({
+    //   ethers,
+    //   signerOrProvider: signer,
+    // } as any);
 
   
-    const safeFactory = await SafeFactory.create({ ethAdapter });
-    const safe: Safe = await safeFactory.deploySafe({
-      safeAccountConfig: { threshold: 1, owners: [safeAuthSignInResponse?.eoa as string] },
-    });
-    };
+    // const safeFactory = await SafeFactory.create({ ethAdapter });
+    // const safe: Safe = await safeFactory.deploySafe({
+    //   safeAccountConfig: { threshold: 1, owners: [safeAuthSignInResponse?.eoa as string] },
+    // });
+    // };
 
-    const getChainId = async () => {
-      if (!provider) {
+    // const getChainId = async () => {
+    //   if (!provider) {
         
-        return;
-      }
-      const rpc = new RPC(provider);
-      const chainId = await rpc.getChainId();
-    };
+    //     return;
+    //   }
+    //   const rpc = new RPC(provider);
+    //   const chainId = await rpc.getChainId();
+    // };
   
-    const getAccounts = async () => {
-      if (!provider) {
-        return;
-      }
-      const rpc = new RPC(provider);
-      const address = await rpc.getAccounts();
-    };
+    // const getAccounts = async () => {
+    //   if (!provider) {
+    //     return;
+    //   }
+    //   const rpc = new RPC(provider);
+    //   const address = await rpc.getAccounts();
+    // };
   
-    const getBalance = async () => {
-      if (!provider) {
-        return;
-      }
-      const rpc = new RPC(provider);
-      const balance = await rpc.getBalance();
-    };
+    // const getBalance = async () => {
+    //   if (!provider) {
+    //     return;
+    //   }
+    //   const rpc = new RPC(provider);
+    //   const balance = await rpc.getBalance();
+    // };
   
-    const sendTransaction = async () => {
-      if (!provider) {
-        return;
-      }
-      const rpc = new RPC(provider);
-      const receipt = await rpc.sendTransaction();
-    };
+    // const sendTransaction = async () => {
+    //   if (!provider) {
+    //     return;
+    //   }
+    //   const rpc = new RPC(provider);
+    //   const receipt = await rpc.sendTransaction();
+    // };
 
   
-    const signMessage = async () => {
-      if (!provider) {
-        return;
-      }
-      const rpc = new RPC(provider);
-      const signedMessage = await rpc.signMessage();
-    };
+    // const signMessage = async () => {
+    //   if (!provider) {
+    //     return;
+    //   }
+    //   const rpc = new RPC(provider);
+    //   const signedMessage = await rpc.signMessage();
+    // };
 
 
   return (
-    typeof window !== 'undefined' ? <div></div> :
+    // typeof window !== 'undefined' ? <div></div> :
     <div>
     <section className="bg-gradient-to-b from-gray-100 to-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
