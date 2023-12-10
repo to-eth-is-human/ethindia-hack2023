@@ -59,7 +59,6 @@ export default class SafeUtil {
     }
 
     getSigner = (env_var: string) => {
-        console.log("ENV VAR RECEIVED", env_var)
         let provider = this.getProvider()
         return new ethers.Wallet(String(env_var), provider)
 
@@ -156,10 +155,6 @@ export default class SafeUtil {
         let signers: Wallet[] = [];
         for (let i = 1; i <= n; i++) {
             let env_var = "NEXT_PUBLIC_OWNER_" + i.toString() + "_PRIVATE_KEY"
-            console.log("ENV????", env_var)
-            console.log(typeof (env_var))
-            console.log("???", process.env[env_var])
-            console.log(process.env)
             const signer = this.getSigner(this.env_map[env_var])
             signers.push(signer)
         }
@@ -303,6 +298,7 @@ export default class SafeUtil {
         const receipt = await executeTxResponse.transactionResponse?.wait()
 
         console.log('Transaction executed:')
+        // @ts-ignore
         console.log(`https://goerli.etherscan.io/tx/${receipt.transactionHash}`)
     }
 
