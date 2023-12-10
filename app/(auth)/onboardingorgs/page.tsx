@@ -31,7 +31,7 @@ export default function SignUp() {
             id={`walletID-${index}`}
             type="text"
             className="form-input w-full text-gray-800"
-            placeholder={`Public Key of Wallet for Member ${index + 1}`}
+            placeholder={`Private Key of Wallet for Member ${index + 1}`}
             value={walletIDs[index]}
             onChange={(event) => handleWalletIDChange(index, event)}
             required
