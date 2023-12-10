@@ -28,7 +28,7 @@ TO ASK
 
 
 
-class SafeUtil {
+export default class SafeUtil {
 
     /*
     Flow: AFter signing in, user will have all his/her safe addresses.
@@ -42,14 +42,26 @@ class SafeUtil {
     A from must be available to send ethereum to the safe
 
     */
+    env_map: { [name: string]: string } = {}
+
+
+    constructor() {
+
+        this.env_map['NEXT_PUBLIC_OWNER_1_PRIVATE_KEY'] = "0xe09beba9fea5b199962185220114ab415065546b90424f473162691ce24c7b41"
+        this.env_map['NEXT_PUBLIC_OWNER_2_PRIVATE_KEY'] = "0xbae26c4c4e44ed8e6e8d1c41c84072c83ec91d507db101cc372c77c94fc3b1ff"
+        this.env_map['NEXT_PUBLIC_OWNER_3_PRIVATE_KEY'] = "0x6d8b619bed6d73c2cea6f5c2f0977a85dc4b7d24d9e052ab477ad747d6508e54"
+        this.env_map['NEXT_PUBLIC_OWNER_4_PRIVATE_KEY'] = "0x82104fef98e49f6c3e8d644d8d81b8ed4f3eb88f10ce2abc6e4dd341a54f6ea2"
+
+    }
 
     getProvider = () => {
         return new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL)
     }
 
     getSigner = (env_var: string) => {
+        console.log("ENV VAR RECEIVED", env_var)
         let provider = this.getProvider()
-        return  new ethers.Wallet(String(env_var), provider)
+        return new ethers.Wallet(String(env_var), provider)
 
     }
 
@@ -67,8 +79,21 @@ class SafeUtil {
 
     getSafeService = () => {
         return new SafeApiKit({
-            chainId: 1n
+            chainId: 5n,
+            txServiceUrl: "https://safe-transaction-goerli.safe.global"
         })
+
+    }
+
+    debugLog = async() => {
+        const safeFactory = await SafeFactory.create({ ethAdapter: this.getOwnerEthAdapter() })
+        let owner_config = {
+            owners: ["0x5982197C06Ecb24E3456595faeD1978e96ccf592", "0xD6c9CAdF5AC7C704218dC8F74787f4E3ACC69223", "0x34ff4569C5aCBA43Ad2526DB6a43e6313F7051CA"],
+            threshold: 2,
+        }
+        let addr = await safeFactory.predictSafeAddress(owner_config)
+        console.log(addr)
+
 
     }
 
@@ -77,13 +102,15 @@ class SafeUtil {
             RPC_URL: (String(process.env.NEXT_PUBLIC_RPC_URL)),
             DEPLOYER_ADDRESS_PRIVATE_KEY: String(process.env.NEXT_PUBLIC_OWNER_2_PRIVATE_KEY),
             DEPLOY_SAFE: {
-              OWNERS: owners_list,
-              THRESHOLD: threshold,
-              SALT_NONCE: '150000',
-              SAFE_VERSION: '1.3.0'
+                OWNERS: owners_list,
+                THRESHOLD: threshold,
+                SALT_NONCE: '150000',
+                SAFE_VERSION: '1.3.0'
             },
-          }
+        }
     }
+
+    
 
     sendEth = async (to_address: string) => {
         console.log("Sending eth")
@@ -121,23 +148,24 @@ class SafeUtil {
 
 
     deployContract = async (n: number) => {
+        console.log(this.env_map)
 
-        console.log("Deploy contract of N accounts and threshold = N/2 + 1")
-
-        const provider = this.getProvider()
+        console.log(`Deploy contract of ${n} accounts and threshold = ${Math.ceil(n)}`)
 
         // Initialize signers
         let signers: Wallet[] = [];
         for (let i = 1; i <= n; i++) {
-
-            const signer = this.getSigner(String(process.env[`NEXT_PUBLIC_OWNER_${String(i)}_PRIVATE_KEY`]))
+            let env_var = "NEXT_PUBLIC_OWNER_" + i.toString() + "_PRIVATE_KEY"
+            console.log("ENV????", env_var)
+            console.log(typeof (env_var))
+            console.log("???", process.env[env_var])
+            console.log(process.env)
+            const signer = this.getSigner(this.env_map[env_var])
             signers.push(signer)
         }
 
 
         // This must be the person who has eth
-        const ownerSigner = this.getOwnerSigner()
-
         console.log("Waiting to initialise safe")
         const safeFactory = await SafeFactory.create({ ethAdapter: this.getOwnerEthAdapter() })
 
@@ -149,7 +177,7 @@ class SafeUtil {
         }
         const safeAccountConfig = {
             owners: owners,
-            threshold: n / 2 + 1,
+            threshold: Math.ceil(n),
         }
 
         console.log(safeAccountConfig)
@@ -187,17 +215,19 @@ class SafeUtil {
         const safe = await Safe.create({
             ethAdapter,
             safeAddress: safe_address
-          })
+        })
 
-        const amount = ethers.parseUnits(ether, 'ether').toString()
+        // const amount = ethers.parseUnits(ether, 'ether').toString()
 
-        const safeTransactionData: MetaTransactionData = {
-            to: dest_address,
+        const safeTransactionData: SafeTransactionDataPartial = {
+            to: '0x',
             data: '0x',
-            value: amount
+            value: "1",
+            operation: OperationType.Call
         }
         // Create a Safe transaction with the provided parameters
         const safeTransaction = await safe.createTransaction({ transactions: [safeTransactionData] })
+        console.log("Transaction created: ", safeTransaction.data)
     }
 
 
@@ -209,15 +239,15 @@ class SafeUtil {
         const safe = await Safe.create({
             ethAdapter,
             safeAddress: safe_address
-          })
-    
+        })
+
         const safeTxHash = await safe.getTransactionHash(transaction)
 
         const senderSignature = await safe.signTransactionHash(safeTxHash)
 
         const safeService = this.getSafeService()
 
-        
+
         await safeService.proposeTransaction({
             safeAddress: safe_address,
             safeTransactionData: transaction.data,
@@ -231,6 +261,7 @@ class SafeUtil {
     getPendingTransactions = async (safeAddress: string) => {
         // TODO: GEt safeService, safeaddress
         const pendingTransactions = (await this.getSafeService().getPendingTransactions(safeAddress)).results
+        console.log("Pending TRansactions", pendingTransactions)
         return pendingTransactions
     }
 
@@ -265,8 +296,8 @@ class SafeUtil {
         const safe = await Safe.create({
             ethAdapter,
             safeAddress: safe_address
-          })
-        
+        })
+
         const safeTransaction = await this.getSafeService().getTransaction(transaction.safeTxHash)
         const executeTxResponse = await safe.executeTransaction(safeTransaction)
         const receipt = await executeTxResponse.transactionResponse?.wait()
@@ -280,18 +311,18 @@ class SafeUtil {
         const safe = await Safe.create({
             ethAdapter,
             safeAddress: safe_address
-          })
+        })
         const afterBalance = await safe.getBalance()
         console.log(`The final balance of the Safe: ${ethers.formatUnits(afterBalance, 'ether')} ETH`)
     }
 
     getSafesByOwner = async (owner_address: string) => {
-        let {safes} = await this.getSafeService().getSafesByOwner(owner_address)
+        let { safes } = await this.getSafeService().getSafesByOwner(owner_address)
+        console.info(safes)
         return safes
 
     }
 
 
 }
-
 

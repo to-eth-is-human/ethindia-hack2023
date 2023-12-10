@@ -2,7 +2,6 @@ export const metadata = {
   title: 'Home - Simple',
   description: 'Page description',
 }
-
 import {React, useEffect} from "react";
 import { ethers } from 'ethers'
 import { EthersAdapter } from '@safe-global/protocol-kit'
@@ -18,6 +17,7 @@ import Features from '@/components/features'
 import FeaturesBlocks from '@/components/features-blocks'
 import Testimonials from '@/components/testimonials'
 import Newsletter from '@/components/newsletter'
+import SafeUtil from "@/src/Safe";
 
 
 /*
@@ -26,42 +26,12 @@ Failures:
 * If contract already exists, it should give the right reason
 * Unable to convert to hexadecimal from BigInt
 */
-export default function Home() {
+export default function Home(
+) {
   let loading =false;
+  let safe_util = new SafeUtil()
 
-  function bnToHex(bn) {
-    bn = BigInt(bn);
-  
-    var pos = true;
-    if (bn < 0) {
-      pos = false;
-      bn = bitnot(bn);
-    }
-  
-    var hex = bn.toString(16);
-    if (hex.length % 2) { hex = '0' + hex; }
-  
-    if (pos && (0x80 & parseInt(hex.slice(0, 2), 16))) {
-      hex = '00' + hex;
-    }
-  
-    return hex;
-  }
-  
-  function bitnot(bn) {
-    bn = -bn;
-    var bin = (bn).toString(2)
-    var prefix = '';
-    while (bin.length % 8) { bin = '0' + bin; }
-    if ('1' === bin[0] && -1 !== bin.slice(1).indexOf('1')) {
-      prefix = '11111111';
-    }
-    bin = bin.split('').map(function (i) {
-      return '0' === i ? '1' : '0';
-    }).join('');
-    return BigInt('0b' + prefix + bin) + BigInt(1);
-  }
-  
+
 
 function setAddress (account_name) {
   document.getElementById("account").innerHTML += account_name
@@ -78,7 +48,8 @@ async function sendEth(account_name) {
 
   // const safeAmount = 'Ox0080'
 
-  const safeAmount = ethers.utils.parseUnits('0.01', 'ether').toString();
+  const safeAmount = "23"
+  // const safeAmount = ethers.utils.parseUnits('0.01', 'ether').toString();
 
 const transactionParameters = {
   to: safeAddress,
@@ -175,12 +146,26 @@ console.log(`https://app.safe.global/gor:${safeAddress}`)
       <Newsletter /> */}
       <h1>Welcome to your homepage</h1>
       <p onClick={async()=>{
-          await deployContract()
+          await safe_util.deployContract(3)
           
           }}>Execure server side rendering code</p>
       <p onClick={async() => {
-        await sendEth("0xD6c9CAdF5AC7C704218dC8F74787f4E3ACC69223")
+        await safe_util.sendEth("0x0Ad2A8416255A58BbD8355ac896522432cacFD5C")
       }}> Send some potatoes!</p>
+
+<p onClick={async() => {
+        await safe_util.getSafesByOwner("0xD6c9CAdF5AC7C704218dC8F74787f4E3ACC69223")
+      }}> Get your safes</p>
+            <p onClick={async() => {
+        await safe_util.createTransaction("0x0Ad2A8416255A58BbD8355ac896522432cacFD5C", "0x34ff4569C5aCBA43Ad2526DB6a43e6313F7051CA", "0.00025")
+      }}> Create transaction</p>
+            <p onClick={async() => {
+        await safe_util.getPendingTransactions("0x0Ad2A8416255A58BbD8355ac896522432cacFD5C")
+      }}> Send some pending potatoes!</p>
+            <p onClick={async() => {
+        await safe_util.getBalance("0x0Ad2A8416255A58BbD8355ac896522432cacFD5C")
+      }}> Balance</p>
+
       
     </>
   )
